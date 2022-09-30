@@ -11,10 +11,10 @@
 // The one and only way of getting global scope in all environments
 // https://stackoverflow.com/q/3277182/1008999
 var _global = typeof window === 'object' && window.window === window
-  ? window : typeof self === 'object' && self.self === self
-  ? self : typeof global === 'object' && global.global === global
-  ? global
-  : this
+    ? window : typeof self === 'object' && self.self === self
+        ? self : typeof global === 'object' && global.global === global
+            ? global
+            : this
 
 function bom (blob, opts) {
   if (typeof opts === 'undefined') opts = { autoBom: false }
@@ -61,7 +61,7 @@ function click (node) {
   } catch (e) {
     var evt = document.createEvent('MouseEvents')
     evt.initMouseEvent('click', true, true, window, 0, 0, 0, 80,
-                          20, false, false, false, false, 0, null)
+        20, false, false, false, false, 0, null)
     node.dispatchEvent(evt)
   }
 }
@@ -72,97 +72,97 @@ function click (node) {
 var isMacOSWebView = _global.navigator && /Macintosh/.test(navigator.userAgent) && /AppleWebKit/.test(navigator.userAgent) && !/Safari/.test(navigator.userAgent)
 
 var saveAs = _global.saveAs || (
-  // probably in some web worker
-  (typeof window !== 'object' || window !== _global)
-    ? function saveAs () { /* noop */ }
+    // probably in some web worker
+    (typeof window !== 'object' || window !== _global)
+        ? function saveAs () { /* noop */ }
 
-  // Use download attribute first if possible (#193 Lumia mobile) unless this is a macOS WebView
-  : ('download' in HTMLAnchorElement.prototype && !isMacOSWebView)
-  ? function saveAs (blob, name, opts) {
-    var URL = _global.URL || _global.webkitURL
-    // Namespace is used to prevent conflict w/ Chrome Poper Blocker extension (Issue #561)
-    var a = document.createElementNS('http://www.w3.org/1999/xhtml', 'a')
-    name = name || blob.name || 'download'
+        // Use download attribute first if possible (#193 Lumia mobile) unless this is a macOS WebView
+        : ('download' in HTMLAnchorElement.prototype && !isMacOSWebView)
+            ? function saveAs (blob, name, opts) {
+              var URL = _global.URL || _global.webkitURL
+              // Namespace is used to prevent conflict w/ Chrome Poper Blocker extension (Issue #561)
+              var a = document.createElementNS('http://www.w3.org/1999/xhtml', 'a')
+              name = name || blob.name || 'download'
 
-    a.download = name
-    a.rel = 'noopener' // tabnabbing
+              a.download = name
+              a.rel = 'noopener' // tabnabbing
 
-    // TODO: detect chrome extensions & packaged apps
-    // a.target = '_blank'
+              // TODO: detect chrome extensions & packaged apps
+              // a.target = '_blank'
 
-    if (typeof blob === 'string') {
-      // Support regular links
-      a.href = blob
-      if (a.origin !== location.origin) {
-        corsEnabled(a.href)
-          ? download(blob, name, opts)
-          : click(a, a.target = '_blank')
-      } else {
-        click(a)
-      }
-    } else {
-      // Support blobs
-      a.href = URL.createObjectURL(blob)
-      setTimeout(function () { URL.revokeObjectURL(a.href) }, 4E4) // 40s
-      setTimeout(function () { click(a) }, 0)
-    }
-  }
+              if (typeof blob === 'string') {
+                // Support regular links
+                a.href = blob
+                if (a.origin !== location.origin) {
+                  corsEnabled(a.href)
+                      ? download(blob, name, opts)
+                      : click(a, a.target = '_blank')
+                } else {
+                  click(a)
+                }
+              } else {
+                // Support blobs
+                a.href = URL.createObjectURL(blob)
+                setTimeout(function () { URL.revokeObjectURL(a.href) }, 4E4) // 40s
+                setTimeout(function () { click(a) }, 0)
+              }
+            }
 
-  // Use msSaveOrOpenBlob as a second approach
-  : 'msSaveOrOpenBlob' in navigator
-  ? function saveAs (blob, name, opts) {
-    name = name || blob.name || 'download'
+            // Use msSaveOrOpenBlob as a second approach
+            : 'msSaveOrOpenBlob' in navigator
+                ? function saveAs (blob, name, opts) {
+                  name = name || blob.name || 'download'
 
-    if (typeof blob === 'string') {
-      if (corsEnabled(blob)) {
-        download(blob, name, opts)
-      } else {
-        var a = document.createElement('a')
-        a.href = blob
-        a.target = '_blank'
-        setTimeout(function () { click(a) })
-      }
-    } else {
-      navigator.msSaveOrOpenBlob(bom(blob, opts), name)
-    }
-  }
+                  if (typeof blob === 'string') {
+                    if (corsEnabled(blob)) {
+                      download(blob, name, opts)
+                    } else {
+                      var a = document.createElement('a')
+                      a.href = blob
+                      a.target = '_blank'
+                      setTimeout(function () { click(a) })
+                    }
+                  } else {
+                    navigator.msSaveOrOpenBlob(bom(blob, opts), name)
+                  }
+                }
 
-  // Fallback to using FileReader and a popup
-  : function saveAs (blob, name, opts, popup) {
-    // Open a popup immediately do go around popup blocker
-    // Mostly only available on user interaction and the fileReader is async so...
-    popup = popup || open('', '_blank')
-    if (popup) {
-      popup.document.title =
-      popup.document.body.innerText = 'downloading...'
-    }
+                // Fallback to using FileReader and a popup
+                : function saveAs (blob, name, opts, popup) {
+                  // Open a popup immediately do go around popup blocker
+                  // Mostly only available on user interaction and the fileReader is async so...
+                  popup = popup || open('', '_blank')
+                  if (popup) {
+                    popup.document.title =
+                        popup.document.body.innerText = 'downloading...'
+                  }
 
-    if (typeof blob === 'string') return download(blob, name, opts)
+                  if (typeof blob === 'string') return download(blob, name, opts)
 
-    var force = blob.type === 'application/octet-stream'
-    var isSafari = /constructor/i.test(_global.HTMLElement) || _global.safari
-    var isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent)
+                  var force = blob.type === 'application/octet-stream'
+                  var isSafari = /constructor/i.test(_global.HTMLElement) || _global.safari
+                  var isChromeIOS = /CriOS\/[\d]+/.test(navigator.userAgent)
 
-    if ((isChromeIOS || (force && isSafari) || isMacOSWebView) && typeof FileReader !== 'undefined') {
-      // Safari doesn't allow downloading of blob URLs
-      var reader = new FileReader()
-      reader.onloadend = function () {
-        var url = reader.result
-        url = isChromeIOS ? url : url.replace(/^data:[^;]*;/, 'data:attachment/file;')
-        if (popup) popup.location.href = url
-        else location = url
-        popup = null // reverse-tabnabbing #460
-      }
-      reader.readAsDataURL(blob)
-    } else {
-      var URL = _global.URL || _global.webkitURL
-      var url = URL.createObjectURL(blob)
-      if (popup) popup.location = url
-      else location.href = url
-      popup = null // reverse-tabnabbing #460
-      setTimeout(function () { URL.revokeObjectURL(url) }, 4E4) // 40s
-    }
-  }
+                  if ((isChromeIOS || (force && isSafari) || isMacOSWebView) && typeof FileReader !== 'undefined') {
+                    // Safari doesn't allow downloading of blob URLs
+                    var reader = new FileReader()
+                    reader.onloadend = function () {
+                      var url = reader.result
+                      url = isChromeIOS ? url : url.replace(/^data:[^;]*;/, 'data:attachment/file;')
+                      if (popup) popup.location.href = url
+                      else location = url
+                      popup = null // reverse-tabnabbing #460
+                    }
+                    reader.readAsDataURL(blob)
+                  } else {
+                    var URL = _global.URL || _global.webkitURL
+                    var url = URL.createObjectURL(blob)
+                    if (popup) popup.location = url
+                    else location.href = url
+                    popup = null // reverse-tabnabbing #460
+                    setTimeout(function () { URL.revokeObjectURL(url) }, 4E4) // 40s
+                  }
+                }
 )
 
 _global.saveAs = saveAs.saveAs = saveAs
@@ -170,44 +170,55 @@ _global.saveAs = saveAs.saveAs = saveAs
 if (typeof module !== 'undefined') {
   module.exports = saveAs;
 }
+///
+/// FileSaver code end
+///
 
-function sleep(milliseconds) {  
-      return new Promise(resolve => setTimeout(resolve, milliseconds));  
-}  
+
+function sleep(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
 
 let button_selector_name = '[class="btn btn-secondary btn-primary new_req btn-labeled"]'
-let content_selectors_names = ['[class="name_of_blank"]','[class="text_template_info"]'] 
+let content_selectors_names = ['[class="name_of_blank"]']
 
-async function parse(delay) {
+document.querySelectorAll(button_selector_name)[0].click()
+await sleep(2000)
+
+async function parse(delay, repeat_permission) {
+  console.log('Parse starting; Repeat permission: ' + repeat_permission + '; Delay: ' + delay)
   let arr_length = document.querySelectorAll(button_selector_name).length
   let data = []
   for(let i = 0; i < arr_length; i++) {
-      document.querySelectorAll(button_selector_name)[i].click();
-      
-      await sleep(delay);
-      
-      let data_components = []
-      for(let j = 0; j < content_selectors_names.length; j++) {
-        if(document.querySelector(content_selectors_names[j]) === null) {
-        	data_components.push('')
-        } else {
-        	data_components.push(document.querySelector(content_selectors_names[j]).textContent + ",")
+    document.querySelectorAll(button_selector_name)[i].click();
+
+    await sleep(delay);
+
+    let data_components = []
+    for(let j = 0; j < content_selectors_names.length; j++) {
+      if(document.querySelector(content_selectors_names[j]) === null) {
+        data_components.push('')
+      } else {
+        data_components.push(document.querySelector(content_selectors_names[j]).textContent + ";")
+
+        if(data.length > 1) {
+          if(data[data.length - 1][data_components.length - 1] === data[data.length - 2][data_components.length - 1]
+              && repeat_permission === false) {
+            console.log('Delay ' + delay + ' is too small! New delay: ' + (delay + 100))
+            data = []
+            return await parse(delay + 100, false)
+          }
         }
       }
-      data_components[data_components.length - 1] = data_components[data_components.length - 1] + "\n"
-      data.push(data_components)
-
-      if(data[data.length - 1] === data[data.length - 2]) {
-        console.log('Delay ' + delay + ' is too small! New delay: ' + (delay + 100))
-        data = []
-        return await parse(delay + 100)
-      }
+    }
+    data_components[data_components.length - 1] = data_components[data_components.length - 1] + "\n"
+    data.push(data_components)
   }
   return data
 }
 
-let cards_names = await parse(500)
+let cards_names = await parse(300, false)
 let blob = new Blob(cards_names, {type: "text/plain;charset=utf-8"})
-saveAs(blob, "names.txt")
+saveAs(blob, "data.txt")
 
 console.log('Saved ' + cards_names.length + ' elements')
