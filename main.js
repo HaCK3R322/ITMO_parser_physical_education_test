@@ -175,13 +175,39 @@ function sleep(milliseconds) {
       return new Promise(resolve => setTimeout(resolve, milliseconds));  
 }  
 
-arr_length = document.querySelectorAll('[class="btn btn-secondary btn-primary new_req btn-labeled"]').length
-let names = []
-for(let i = 0; i < arr_length; i++) {
-    document.querySelectorAll('[class="btn btn-secondary btn-primary new_req btn-labeled"]')[i].click();
-    names.push(document.querySelector('[class="name_of_blank"]').textContent + ",\n")
-    await sleep(500);
+let button_selector_name = '[class="btn btn-secondary btn-primary new_req btn-labeled"]'
+let content_selectors_names = ['[class="name_of_blank"]','[class="text_template_info"]'] 
+
+async function parse(delay) {
+  let arr_length = document.querySelectorAll(button_selector_name).length
+  let data = []
+  for(let i = 0; i < arr_length; i++) {
+      document.querySelectorAll(button_selector_name)[i].click();
+      
+      await sleep(delay);
+      
+      let data_components = []
+      for(let j = 0; j < content_selectors_names.length; j++) {
+        if(document.querySelector(content_selectors_names[j]) === null) {
+        	data_components.push('')
+        } else {
+        	data_components.push(document.querySelector(content_selectors_names[j]).textContent + ",")
+        }
+      }
+      data_components[data_components.length - 1] = data_components[data_components.length - 1] + "\n"
+      data.push(data_components)
+
+      if(data[data.length - 1] === data[data.length - 2]) {
+        console.log('Delay ' + delay + ' is too small! New delay: ' + (delay + 100))
+        data = []
+        return await parse(delay + 100)
+      }
+  }
+  return data
 }
-let blob = new Blob(names, {type: "text/plain;charset=utf-8"})
+
+let cards_names = await parse(500)
+let blob = new Blob(cards_names, {type: "text/plain;charset=utf-8"})
 saveAs(blob, "names.txt")
-console.log('Saved ' + names.length + 'elements')
+
+console.log('Saved ' + cards_names.length + ' elements')
